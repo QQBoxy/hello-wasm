@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Text</title>
+</head>
+
+<body>
+    <script>
+        (async () => {
+            const merge_text = async (str_a, str_b) => {
+                const results = await WebAssembly.instantiateStreaming(fetch("merge_text.wasm"), {});
+                const { exports } = results.instance;
+                const encoder = new TextEncoder("utf-8");
+                const decoder = new TextDecoder("utf-8");
+                const memory = new Uint8Array(exports.memory.buffer);
+                const a_mem = exports.get_memory_for_char_array(10);
+                const b_mem = exports.get_memory_for_char_array(10);
+                const c_mem = exports.get_memory_for_char_array(10);
+                const a = memory.subarray(a_mem);
+                const b = memory.subarray(b_mem);
+                a.set(encoder.encode(str_a));
+                b.set(encoder.encode(str_b));
+                const ptr = exports.merge_text(a_mem, b_mem, c_mem);
+                // ptr is the same as c_mem
+                let len = 0;
+                while (memory[ptr + len] !== 0) {
+                    ++len;
+                }
+                const c = memory.subarray(ptr, ptr + len);
+                const str_c = decoder.decode(c);
+                return str_c;
+            };
+            const result = await merge_text("Hello ", "World");
+            console.log(result);
+        })();
+    </script>
+</body>
+
+</html>
