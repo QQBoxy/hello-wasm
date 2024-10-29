@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Text</title>
+</head>
+
+<body>
+    <script>
+        (async () => {
+            const base64_encode = async (str) => {
+                const results = await WebAssembly.instantiateStreaming(fetch("base64.wasm"), {});
+                const { exports } = results.instance;
+                const encoder = new TextEncoder("utf-8");
+                const decoder = new TextDecoder("utf-8");
+                // 將字串轉為 Uint8Array
+                const encodedData = encoder.encode(str);
+                // 取得資料長度
+                const srcLength = encodedData.length;
+                // 將資料長度轉為 Uint8Array
+                const resultLengthBytes = new Uint8Array(4);
+                const view = new DataView(resultLengthBytes.buffer);
+                view.setUint32(0, srcLength * 4, true);
+                // 取得共享記憶體空間資料
+                const memory = new Uint8Array(exports.memory.buffer);
+                // 建立資料區塊
+                const src_mem = exports.get_memory_for_char_array(srcLength);
+                const resultLength_mem = exports.get_memory_for_char_array(4);
+                const result_mem = exports.get_memory_for_char_array((srcLength / 3 + 1) * 4);
+                // 取得資料位置並寫入
+                const src = memory.subarray(src_mem);
+                src.set(encodedData);
+                const resultLength = memory.subarray(resultLength_mem);
+                resultLength.set(resultLengthBytes);
+                // 執行 base64_encode
+                exports.base64_encode(src_mem, srcLength, result_mem, resultLength_mem);
+                // 取得從 result_mem 開始的不為 0 的資料
+                let len = 0;
+                while (memory[result_mem + len] !== 0) {
+                    ++len;
+                }
+                const result = memory.subarray(result_mem, result_mem + len);
+                const str_c = decoder.decode(result);
+                return str_c;
+            };
+            const base64_decode = async (str) => {
+                const results = await WebAssembly.instantiateStreaming(fetch("base64.wasm"), {});
+                const { exports } = results.instance;
+                const encoder = new TextEncoder("utf-8");
+                const decoder = new TextDecoder("utf-8");
+                // 將字串轉為 Uint8Array
+                const encodedData = encoder.encode(str);
+                // 取得資料長度
+                const srcLength = encodedData.length;
+                // 將資料長度轉為 Uint8Array
+                const resultLengthBytes = new Uint8Array(4);
+                const view = new DataView(resultLengthBytes.buffer);
+                view.setUint32(0, srcLength * 4, true);
+                // 取得共享記憶體空間資料
+                const memory = new Uint8Array(exports.memory.buffer);
+                // 建立資料區塊
+                const src_mem = exports.get_memory_for_char_array(srcLength);
+                const resultLength_mem = exports.get_memory_for_char_array(4);
+                const result_mem = exports.get_memory_for_char_array(srcLength / 4 * 3);
+                // 取得資料位置並寫入
+                const src = memory.subarray(src_mem);
+                src.set(encodedData);
+                const resultLength = memory.subarray(resultLength_mem);
+                resultLength.set(resultLengthBytes);
+                // 執行 base64_decode
+                exports.base64_decode(src_mem, srcLength, result_mem, resultLength_mem);
+                // 取得從 result_mem 開始的不為 0 的資料
+                let len = 0;
+                while (memory[result_mem + len] !== 0) {
+                    ++len;
+                }
+                const result = memory.subarray(result_mem, result_mem + len);
+                const str_c = decoder.decode(result);
+                return str_c;
+            };
+            const encodedBase64Data = await base64_encode("a Ā 𐀀 文 🦄");
+            console.log("encodedBase64Data", encodedBase64Data);
+            const decodedData = await base64_decode(encodedBase64Data);
+            console.log("decodedData", decodedData);
+        })();
+    </script>
+</body>
+
+</html>
