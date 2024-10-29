@@ -1,4 +1,4 @@
-// emcc base64.cpp -o base64.wasm -s STANDALONE_WASM -s --no-entry
+// emcc base64.cpp -o base64.wasm -s STANDALONE_WASM --no-entry
 #include <emscripten.h>
 
 extern "C"
