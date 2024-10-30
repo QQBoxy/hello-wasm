@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bind Vector</title>
+</head>
+
+<body>
+    <script type="module">
+        import Module from "./vector.js";
+        (async () => {
+            const module = await Module();
+
+            const vec = new module.VectorInt();
+            [1, 2, 3].forEach(num => vec.push_back(num));
+
+            const returnVec = new module.returnVectorData(vec);
+
+            for (let i = 0; i < returnVec.size(); i++) {
+                console.log("Vector Value: ", returnVec.get(i));
+            }
+            returnVec.delete();
+            vec.delete();
+        })();
+    </script>
+</body>
+
+</html>
