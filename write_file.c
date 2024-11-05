@@ -1,3 +1,4 @@
+// emcc write_file.c -o hello.html
 #include <stdio.h>
 #include <string.h>
 

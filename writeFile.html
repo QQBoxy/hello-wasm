@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write File</title>
+</head>
+
+<body>
+    <input type="file" id="fileInput" />
+    <button onclick="loadFile()">Load and Modify File</button>
+    <p id="output"></p>
+
+    <script>
+        var Module = {
+            onRuntimeInitialized: function() {
+                console.log("Emscripten module initialized.");
+            }
+        };
+    </script>
+    
+    <script src="writeFile.js"></script>
+
+    <script>
+        function loadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    // 將使用者選擇的檔案內容寫入虛擬檔案系統
+                    const content = event.target.result;
+                    Module.FS.writeFile('/input.txt', content);
+                    console.log("File loaded into the virtual file system.");
+
+                    // 呼叫 WebAssembly 中的 C++ 函式來修改檔案
+                    Module._modifyFile();
+
+                    // 讀取修改後的檔案並顯示結果
+                    const modifiedContent = Module.FS.readFile('/output.txt', { encoding: 'utf8' });
+                    document.getElementById('output').innerText = modifiedContent;
+                };
+
+                // 使用 FileReader 以文字格式讀取檔案
+                reader.readAsText(file);
+            } else {
+                alert("Please select a file first.");
+            }
+        }
+    </script>
+</body>
+
+</html>
