@@ -1,5 +1,4 @@
-// emcc writeFile.cpp -o writeFile.js -s EXPORTED_FUNCTIONS="['_modifyFile']" -s FORCE_FILESYSTEM=1
-// emcc writeFile.cpp -o writeFile.js -s EXPORTED_FUNCTIONS="['_modifyFile']" -s EXPORTED_RUNTIME_METHODS="['FS']" -s FORCE_FILESYSTEM=1
+// emcc writeFile.cpp -o writeFile.js -s MODULARIZE=1 -s EXPORT_ES6=1 -s EXPORTED_FUNCTIONS="['_modifyFile']" -s EXPORTED_RUNTIME_METHODS="['FS']" -s FORCE_FILESYSTEM=1
 
 #include <iostream>
 #include <fstream>
@@ -9,7 +8,7 @@
 extern "C" {
     EMSCRIPTEN_KEEPALIVE
     void modifyFile() {
-        std::ifstream inputFile("/input.txt");
+        std::ifstream inputFile("/input");
         std::string content;
 
         // 讀取檔案內容
@@ -25,7 +24,7 @@ extern "C" {
         content += " world";
 
         // 寫回檔案
-        std::ofstream outputFile("/output.txt");
+        std::ofstream outputFile("/output");
         outputFile << content;
         outputFile.close();
 
