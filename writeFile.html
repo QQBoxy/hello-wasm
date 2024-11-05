@@ -33,7 +33,7 @@
                     console.log("File loaded into the virtual file system.");
 
                     // 呼叫 WebAssembly 中的 C++ 函式來修改檔案
-                    module._modifyFile();
+                    module.modifyFile();
 
                     // 讀取修改後的檔案並顯示結果
                     const modifiedContent = module.FS.readFile('/output', { encoding: 'utf8' });
